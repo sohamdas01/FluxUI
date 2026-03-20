@@ -14,7 +14,7 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
   title: "FluxUI",
   description: "Generated High Quality Free UI/UX Mobile and Web Designs with AI",
-};
+};  
 
 export default function RootLayout({
   children,
