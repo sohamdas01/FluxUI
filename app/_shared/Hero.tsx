@@ -21,6 +21,7 @@ import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { randomUUID } from 'crypto';
 import axios from 'axios';
+
 const Hero = () => {
     const{user}=useUser();
     const[userInput, setUserInput] = useState<string>();
@@ -47,6 +48,7 @@ const Hero = () => {
            setLoading(false);
            console.log(result.data)
            //naviagte to project page
+           router.push(`/project/${projectId}`);
         }
     return (
         <div className='p-10 md:px-24 lg:px-48 xl:px-60 mt-10'>
