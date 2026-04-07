@@ -1,14 +1,24 @@
 "use client"
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Camera, Share, Sparkle, SparkleIcon } from 'lucide-react';
 import { THEME_LIST_NAME, THEMES } from '@/data/Themes';
-const SettingSection = () => {
+import { ProjectType } from '@/type/types';
+// This component can be expanded to include more settings as needed, such as theme selection, project name editing, screen generation input, etc. For now, it includes placeholders for these functionalities.
+type Props={
+    projectDetail:ProjectType|undefined
+}
+const SettingSection = ({projectDetail}:Props) => {
     const [selectedTheme,setSelectedTheme]=useState(' DUSTY_ORCHID');
-    const[projectName,setProjectName]=useState('');
+    const[projectName,setProjectName]=useState(projectDetail?.projectName );
     const[generateScreenInput,setGenerateScreenInput]=useState<string>('');
+   // We can have useEffects to initialize the state based on projectDetail when it is loaded
+    useEffect(()=>{
+        projectDetail&& setProjectName(projectDetail?.projectName);
+    },[projectDetail])
+
     return (
         <div className='w-[250px] h-[90vh] p-5 border-r'>
             <h2 className='font-medium text-lg'>Settings</h2>
