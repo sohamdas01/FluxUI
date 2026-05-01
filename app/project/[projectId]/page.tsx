@@ -102,7 +102,7 @@ const page = () => {
                     </div>
                 )}
                 {/* Setting */}
-                <SettingSection projectDetail={projectDetail} />
+                <SettingSection projectDetail={projectDetail}  screenDescription={screenConfig[0]?.screenDescription} />
                 {/* canvas */}
                 <Canvas projectDetail={projectDetail} screenConfig={screenConfig} />
             </div>
