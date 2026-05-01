@@ -1,30 +1,44 @@
 "use client"
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState ,useContext} from 'react'
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Camera, Share, Sparkle, SparkleIcon } from 'lucide-react';
 import { THEME_LIST_NAME, THEMES } from '@/data/Themes';
 import { ProjectType } from '@/type/types';
+import { SettingContext } from '@/context/SettingContext';
 // This component can be expanded to include more settings as needed, such as theme selection, project name editing, screen generation input, etc. For now, it includes placeholders for these functionalities.
 type Props={
     projectDetail:ProjectType|undefined
 }
 const SettingSection = ({projectDetail}:Props) => {
     const [selectedTheme,setSelectedTheme]=useState(' DUSTY_ORCHID');
-    const[projectName,setProjectName]=useState(projectDetail?.projectName );
+    // const[projectName,setProjectName]=useState(projectDetail?.projectName );
+    const[projectName,setProjectName]=useState('');
     const[generateScreenInput,setGenerateScreenInput]=useState<string>('');
+    const{settingDetails,setSettingDetails}=useContext(SettingContext);
    // We can have useEffects to initialize the state based on projectDetail when it is loaded
-    useEffect(()=>{
-        projectDetail&& setProjectName(projectDetail?.projectName);
-    },[projectDetail])
+    useEffect(() => {
+    projectDetail && setProjectName(projectDetail?.projectName ?? '');
+    setSelectedTheme(projectDetail?.theme as string);
+}, [projectDetail])
+const onThemeSelect=(theme:string)=>{
+    setSelectedTheme(theme);
+    // We can also update the project details in the context here if needed, so that it can be reflected in the canvas immediately
+    setSettingDetails((prev:any)=>({...prev,theme:theme}))
 
+}
     return (
         <div className='w-[250px] h-[90vh] p-5 border-r'>
             <h2 className='font-medium text-lg'>Settings</h2>
             <div className='mt-3'>
                 <h2 className='text-sm mb-1' >Project Name</h2>
-                <Input placeholder='Project Name' className='w-full' value={projectName} onChange={(e) => setProjectName(e.target.value)} />
+                <Input placeholder='Project Name' className='w-full' value={projectName} onChange={(e) => {setProjectName(e.target.value)
+                setSettingDetails((prev:any)=>({
+                    ...prev,
+                    projectName:projectName
+                })) 
+                }} />
             </div>
             <div className='mt-5'>
                 <h2 className='text-sm mb-1'>Generate New Screen</h2>
@@ -37,7 +51,7 @@ const SettingSection = ({projectDetail}:Props) => {
                     <div>
                         {THEME_LIST_NAME.map((theme, index) => (
                             <div className={`border rouded-xl mb-2 p-3 ${theme==selectedTheme &&'border-primary bg-primary/20'}`} key={index}
-                             onClick={()=>setSelectedTheme(theme)}>
+                             onClick={()=>onThemeSelect(theme)}>
                                 <h2>{theme}</h2>
                                 <div className='flex gap-2 '>
                                     <div className={`h-4 w-4 rounded-full`} style={{ backgroundColor: THEMES[theme].primary }} />
