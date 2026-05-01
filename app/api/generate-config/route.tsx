@@ -1,101 +1,149 @@
+
+
 // import { NextRequest, NextResponse } from "next/server";
-// import { openrouter } from "@/config/openrouter";
+// import OpenAI from "openai";
 // import { App_Layout_Prompt } from "@/data/Prompt";
+// import { projectsTable, screensConfigTable } from "@/config/schema";
+// import { db } from "@/config/db";
+// import { eq } from "drizzle-orm/sql/expressions/conditions";
 
-// xport async function POST(req:NextRequest) {
-//    const {userInput,deviceType,projectId} = await req.json();
-
-//    const aiResponse = await openrouter.chat.send({
-    
-//    model: "openai/gpt-5.1-codex-mini",
-//    messages: [
-//     {
-//         role: "system",
-//         content: [
-//           {
-//             "type": "text",
-//             "text":App_Layout_Prompt.replace("{deviceType}",deviceType)
-//           }
-//         ]
-//       },
-//       {
-//         "role": "user",
-//         "content": [
-//           {
-//           "type": "text",
-//           "text":userInput
-//         },
-//       ]
-//     }
-//   ],
-//   stream: false
+// const client = new OpenAI({
+//   apiKey: process.env.OPENAI_API_KEY,
 // });
-// console.log(aiResponse)
-// return NextResponse.json(aiResponse?.choices[0]?.message?.content);
 
+// export async function POST(req: NextRequest) {
+//   try {
+      
+//     const { userInput, deviceType, projectId } = await req.json();
+
+//     const completion = await client.chat.completions.create({
+//       model: "gpt-4.1",
+//       messages: [
+//         {
+//           role: "system",
+//           content: App_Layout_Prompt.replace("{deviceType}", deviceType),
+//         },
+//         {
+//           role: "user",
+//           content: userInput,
+//         },
+//       ],
+//     });
+
+//     const JSONaiResponse = JSON.parse(completion.choices[0]?.message?.content as string);
+//     console.log("AI RESPONSE ", JSONaiResponse);
+
+//     if (JSONaiResponse) {
+//       // Update project details with AI response
+//       await db.update(projectsTable).set({
+//         projectVisualDescription: JSONaiResponse?.projectVisualDescription,
+//         projectName: JSONaiResponse?.projectName,
+//         theme: JSONaiResponse?.theme
+//       }).where(eq(projectsTable.projectId, projectId));
+
+//       const seen = new Set<string>();
+//       const uniqueScreens = JSONaiResponse.screens?.filter((screen: any) => {
+//         if (seen.has(screen.id)) return false;
+//         seen.add(screen.id);
+//         return true;
+//       });
+
+//       uniqueScreens?.forEach(async (screen: any) => {
+//         await db.insert(screensConfigTable).values({
+//           projectId: projectId,
+//           screenId: screen?.id,
+//           purpose: screen?.purpose,
+//           screenDescription: screen?.layoutDescription,
+//           screenName: screen?.name
+//         });
+//       });
+//       return NextResponse.json(
+//         JSONaiResponse
+//       );
+//     } else {
+//       return NextResponse.json({ error: "Failed to generate config" }, { status: 500 });
+//     }
+//   } catch (error) {
+//     console.error("ERROR ", error);
+//     return NextResponse.json({ error: "Failed" }, { status: 500 });
+//   }
 // }
-
 
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { App_Layout_Prompt } from "@/data/Prompt";
 import { projectsTable, screensConfigTable } from "@/config/schema";
 import { db } from "@/config/db";
-import { eq } from "drizzle-orm/sql/expressions/conditions";
+import { eq,and } from "drizzle-orm/sql/expressions/conditions";
+import { currentUser } from '@clerk/nextjs/server';
 
 const client = new OpenAI({
-  baseURL: "https://openrouter.ai/api/v1",
-  apiKey: process.env.OPENROUTER_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 export async function POST(req: NextRequest) {
   try {
-  
     const { userInput, deviceType, projectId } = await req.json();
 
-    const completion = await client.chat.completions.create({
-      model: "openai/gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: App_Layout_Prompt.replace("{deviceType}", deviceType),
-        },
-        {
-          role: "user",
-          content: userInput,
-        },
-      ],
+    // ✅ Use responses.create() for gpt-5.1-codex-mini
+    const completion = await client.responses.create({
+      model: "gpt-5.1-codex-mini",
+      instructions: App_Layout_Prompt.replace("{deviceType}", deviceType),
+      input: userInput,
     });
- 
-    const JSONaiResponse=JSON.parse(completion.choices[0]?.message?.content as string);
+
+    // ✅ Use output_text instead of choices[0].message.content
+    const JSONaiResponse = JSON.parse(completion.output_text);
     console.log("AI RESPONSE ", JSONaiResponse);
 
-     if(JSONaiResponse){
-        // Update project details with AI response
-    await db.update(projectsTable).set({
-      projectVisualDescription: JSONaiResponse?.projectVisualDescription,
-      projectName: JSONaiResponse?.projectName,
-      theme: JSONaiResponse?.theme
-    }).where(eq(projectsTable.projectId, projectId));
+    if (JSONaiResponse) {
+      await db.update(projectsTable).set({
+        projectVisualDescription: JSONaiResponse?.projectVisualDescription,
+        projectName: JSONaiResponse?.projectName,
+        theme: JSONaiResponse?.theme
+      }).where(eq(projectsTable.projectId, projectId));
 
-    // Store the generated screen config in the database
-    JSONaiResponse.screens?.forEach(async (screen:any)=>{
-        const result=await db.insert(screensConfigTable).values({
-          projectId:projectId,
-          screenId:screen?.id,
-          purpose:screen?.purpose,
-          screenDescription:screen?.layoutDescription,
-          screenName:screen?.name
+      const seen = new Set<string>();
+      const uniqueScreens = JSONaiResponse.screens?.filter((screen: any) => {
+        if (seen.has(screen.id)) return false;
+        seen.add(screen.id);
+        return true;
+      });
+
+      uniqueScreens?.forEach(async (screen: any) => {
+        await db.insert(screensConfigTable).values({
+          projectId: projectId,
+          screenId: screen?.id,
+          purpose: screen?.purpose,
+          screenDescription: screen?.layoutDescription,
+          screenName: screen?.name
         });
       });
-      return NextResponse.json(
-      JSONaiResponse
-    );
-    }else{
-        return NextResponse.json({ error: "Failed to generate config" }, { status: 500 });
+
+      return NextResponse.json(JSONaiResponse);
+    } else {
+      return NextResponse.json({ error: "Failed to generate config" }, { status: 500 });
     }
   } catch (error) {
     console.error("ERROR ", error);
     return NextResponse.json({ error: "Failed" }, { status: 500 });
   }
+}
+
+export async function DELETE(req: NextRequest) {
+  const projectId = req.nextUrl.searchParams.get('projectId');
+  const screenId = req.nextUrl.searchParams.get('screenId');
+
+  const user= await currentUser();
+
+  if (!projectId || !screenId || !user?.primaryEmailAddress?.emailAddress) {
+    return NextResponse.json({ error: "Missing projectId, screenId or user" }, { status: 400 });
+  }
+  const result =await db.delete(screensConfigTable).where(
+    and(
+      eq(screensConfigTable.projectId, projectId),
+      eq(screensConfigTable.screenId, screenId as string)
+    )
+  );
+  return NextResponse.json({ msg: "Screen deleted successfully" });
 }

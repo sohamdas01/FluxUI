@@ -40,6 +40,36 @@ export async function GET(req: NextRequest) {
     } catch (error) {
         return NextResponse.json({ error: 'Something went wrong' }, { status: 500 });
     }
-
 }
 
+export async function PUT(req: NextRequest) {
+  try {
+    const { projectName, theme, projectId } = await req.json();
+    const user = await currentUser();
+
+    if (!projectId || !user?.primaryEmailAddress?.emailAddress) {
+      return NextResponse.json(
+        { error: "Missing projectId or user" },
+        { status: 400 }
+      );
+    }
+
+    const result = await db.update(projectsTable)
+      .set({
+        projectName,
+        theme
+      })
+      .where(
+       and(
+          eq(projectsTable.projectId, projectId as string),
+          eq(projectsTable.userId, user.primaryEmailAddress.emailAddress as string)
+      )
+      )
+      .returning();
+
+    return NextResponse.json(result[0] ?? {});
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: "Update failed" }, { status: 500 });
+  }
+}
