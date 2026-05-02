@@ -3,6 +3,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { db } from "@/config/db";
 import { projectsTable, screensConfigTable } from "@/config/schema";
 import { eq, and } from "drizzle-orm/sql/expressions/conditions";
+import { desc } from "drizzle-orm";
 
 export async function POST(req: NextRequest) {
     const { userInput, device, projectId } = await req.json();
@@ -22,13 +23,17 @@ export async function GET(req: NextRequest) {
     const projectId = await req.nextUrl.searchParams.get('projectId');
     const user = await currentUser();
     //check if projectId and user email is present
-    if (!projectId || !user?.primaryEmailAddress?.emailAddress) {
+    if ( !user?.primaryEmailAddress?.emailAddress) {
         return NextResponse.json(
-            { error: "Missing projectId or user" },
+            { error: "Missing  user" },
             { status: 400 }
         );
     }
     try {
+       if(!projectId){
+         const result = await db.select().from(projectsTable).where(eq(projectsTable.userId, user?.primaryEmailAddress?.emailAddress as string)).orderBy(desc(projectsTable.id));
+         return NextResponse.json(result);
+       }
         //fetch project from db based on projectId and user email    
         const result = await db.select().from(projectsTable).where(and(eq(projectsTable.projectId, projectId), eq(projectsTable.userId, user?.primaryEmailAddress?.emailAddress as string)));
        //fetch screen config for the project

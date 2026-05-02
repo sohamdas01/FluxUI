@@ -1,5 +1,5 @@
 "use client"
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState,useRef } from 'react'
 import ProjectHeader from './_shared/ProjectHeader'
 import SettingSection from './_shared/SettingSection'
 import { useParams } from 'next/navigation';
@@ -20,6 +20,7 @@ const page = () => {
     const{settingDetails,setSettingDetails}=useContext(SettingContext);
    const{refreshData,setRefreshData}=useContext(RefreshDataContext);
    const[takeScreenShot,setTakeScreenShot]=useState<any>();
+
     useEffect(() => {
         GetProjectDetails();
     }, [])
@@ -43,14 +44,25 @@ const page = () => {
         setLoading(false);
     }
     // We can have a separate useEffect to watch for projectDetail and screenConfig changes to trigger screen config generation if needed
-    useEffect(() => {
-        if (projectDetail && screenConfigOriginal.length === 0) {
-            generateScreenConfig();
-        }
-        else if (projectDetail && screenConfigOriginal.length > 0) {
-            handleGenerateScreenUI();
-        }
-    }, [projectDetail, screenConfigOriginal])
+    // useEffect(() => {
+    //     if (projectDetail && screenConfigOriginal.length === 0) {
+    //         generateScreenConfig();
+    //     }
+    //     else if (projectDetail && screenConfigOriginal.length > 0) {
+    //         handleGenerateScreenUI();
+    //     }
+    // }, [projectDetail, screenConfigOriginal])
+    const hasGenerated = useRef(false); 
+
+useEffect(() => {
+    if (projectDetail && screenConfigOriginal.length === 0 && !hasGenerated.current) {
+        hasGenerated.current = true; 
+        generateScreenConfig();
+    }
+    else if (projectDetail && screenConfigOriginal.length > 0) {
+        handleGenerateScreenUI();
+    }
+}, [projectDetail, screenConfigOriginal])
 
     // This function can also be called on demand from the UI, for example via a button in the settings section, if we want to allow users to regenerate screen config
     const generateScreenConfig = async () => {
@@ -87,7 +99,7 @@ const page = () => {
             });
             console.log(result.data)
 
-            setScreenConfig(prev => prev.map((item, idx) => (i === idx ? result.data : item)));
+          setScreenConfig(prev => prev.map((item, idx) => (i === idx ? result.data : item)));
         }
         setLoading(false);
      
