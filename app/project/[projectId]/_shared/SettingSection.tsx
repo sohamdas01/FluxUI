@@ -12,9 +12,10 @@ import { RefreshDataContext } from '@/context/RefreshDataContext';
 // This component can be expanded to include more settings as needed, such as theme selection, project name editing, screen generation input, etc. For now, it includes placeholders for these functionalities.
 type Props = {
     projectDetail: ProjectType | undefined,
-    screenDescription?: string | undefined
+    screenDescription?: string | undefined,
+    takeScreenShot:any
 }
-const SettingSection = ({ projectDetail, screenDescription }: Props) => {
+const SettingSection = ({ projectDetail, screenDescription, takeScreenShot }: Props) => {
     const [selectedTheme, setSelectedTheme] = useState(' DUSTY_ORCHID');
     // const[projectName,setProjectName]=useState(projectDetail?.projectName );
     const [projectName, setProjectName] = useState('');
@@ -103,7 +104,7 @@ const SettingSection = ({ projectDetail, screenDescription }: Props) => {
             </div>
             <div className='mt-5'>
 
-                <Button size={'sm'} className='mt-2 w-full'><Camera />ScreenShot</Button>
+                <Button size={'sm'} className='mt-2 w-full' onClick={()=>takeScreenShot()}><Camera />ScreenShot</Button>
                 <Button size={'sm'} className='mt-2 w-full'><Share />Share</Button>
 
             </div>
