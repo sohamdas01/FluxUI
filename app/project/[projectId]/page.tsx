@@ -19,7 +19,7 @@ const page = () => {
     const [screenConfig, setScreenConfig] = useState<ScreenConfigType[]>([]);
     const{settingDetails,setSettingDetails}=useContext(SettingContext);
    const{refreshData,setRefreshData}=useContext(RefreshDataContext);
-
+   const[takeScreenShot,setTakeScreenShot]=useState<any>();
     useEffect(() => {
         GetProjectDetails();
     }, [])
@@ -90,6 +90,7 @@ const page = () => {
             setScreenConfig(prev => prev.map((item, idx) => (i === idx ? result.data : item)));
         }
         setLoading(false);
+     
     }
     return (
         <div>
@@ -102,9 +103,9 @@ const page = () => {
                     </div>
                 )}
                 {/* Setting */}
-                <SettingSection projectDetail={projectDetail}  screenDescription={screenConfig[0]?.screenDescription} />
+                <SettingSection projectDetail={projectDetail}  screenDescription={screenConfig[0]?.screenDescription} takeScreenShot={() => setTakeScreenShot(Date.now())} />
                 {/* canvas */}
-                <Canvas projectDetail={projectDetail} screenConfig={screenConfig} />
+                <Canvas projectDetail={projectDetail} screenConfig={screenConfig} takeScreenShot={takeScreenShot}/>
             </div>
         </div>
     )

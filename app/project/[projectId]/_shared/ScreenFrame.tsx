@@ -17,16 +17,17 @@ type Props = {
   htmlCode: string | undefined,
   projectDetail: ProjectType | undefined,
   isMobile?: boolean,
-  screen:ScreenConfigType|undefined
+  screen:ScreenConfigType|undefined,
+  iframeRef:any
 }
-const ScreenFrame = ({ x, y, setPanningEnabled, width, height, htmlCode, projectDetail, isMobile, screen }: Props) => {
+const ScreenFrame = ({ x, y, setPanningEnabled, width, height, htmlCode, projectDetail, isMobile, screen, iframeRef }: Props) => {
   const{settingDetails,setSettingDetails}=useContext(SettingContext);
   // const theme=THEMES[settingDetails?.theme??projectDetail?.theme??' DUSTY_ORCHID'];
   const themeKey = (settingDetails?.theme ?? projectDetail?.theme ?? 'DUSTY_ORCHID') as keyof typeof THEMES;
    const theme = THEMES[themeKey] 
  
 
-  const iframeref = useRef<HTMLIFrameElement | null>(null);
+  // const iframeref = useRef<HTMLIFrameElement | null>(null);
   
   // const html=htmlWrapper(theme,htmlCode as string,isMobile??false);
   const html = htmlWrapper(theme ?? THEMES['AURORA_INK'], htmlCode as string, isMobile ?? false);
@@ -39,7 +40,7 @@ const ScreenFrame = ({ x, y, setPanningEnabled, width, height, htmlCode, project
      },[width,height])
 
    const measureIframeHeight = useCallback(() => {
-  const iframe = iframeref.current;
+  const iframe = iframeRef.current;
   if (!iframe) return;
 
   try {
@@ -69,7 +70,7 @@ const ScreenFrame = ({ x, y, setPanningEnabled, width, height, htmlCode, project
 
 
 useEffect(() => {
-  const iframe = iframeref.current;
+  const iframe = iframeRef.current;
   if (!iframe) return;
 
   const onLoad = () => {
@@ -122,10 +123,10 @@ useEffect(() => {
         setSize({width:ref.offsetWidth,height:ref.offsetHeight});}}
     >
       <div className='drag-handle flex gap-2 items-center cursor-move bg-white  rounded-lg p-4'>
-        <ScreenHandler  screen={screen} theme={theme} isMobile={isMobile} iframeref={iframeref} projectId={projectDetail?.projectId} />
+        <ScreenHandler  screen={screen} theme={theme} isMobile={isMobile} iframeref={iframeRef} projectId={projectDetail?.projectId} />
       </div>
       <iframe
-        ref={iframeref}
+        ref={iframeRef}
         className='w-full h-[calc(100%-40px)] bg-white rounded-2xl mt-5' sandbox='allow-same-origin allow-scripts' srcDoc={html} />
     </Rnd>
   )

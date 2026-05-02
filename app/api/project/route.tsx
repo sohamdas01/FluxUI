@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
-    const { projectName, theme, projectId } = await req.json();
+    const { projectName, theme, projectId, screenshot } = await req.json();
     const user = await currentUser();
 
     if (!projectId || !user?.primaryEmailAddress?.emailAddress) {
@@ -57,7 +57,8 @@ export async function PUT(req: NextRequest) {
     const result = await db.update(projectsTable)
       .set({
         projectName,
-        theme
+        theme,
+        screenshot:screenshot as string??null
       })
       .where(
        and(
