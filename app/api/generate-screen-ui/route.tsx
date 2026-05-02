@@ -43,19 +43,19 @@
 //  function sanitizeHtmlCode(raw: string): string {
 //   // Remove any markdown code fences (```html, ```tsx, ``` etc.)
 //   let cleaned = raw.replace(/^```[\w]*\n?/gm, '').replace(/\n?```\s*$/gm, '');
-  
+
 //   // Find the first < character (start of actual HTML) and slice from there
 //   const firstTag = cleaned.indexOf('<');
 //   if (firstTag > 0) {
 //     cleaned = cleaned.slice(firstTag);
 //   }
-  
+
 //   // Remove everything after the last closing tag
 //   const lastTag = cleaned.lastIndexOf('>');
 //   if (lastTag !== -1) {
 //     cleaned = cleaned.slice(0, lastTag + 1);
 //   }
-  
+
 //   return cleaned.trim();
 // }
 //   const rawCode = completion?.choices[0]?.message?.content as string;
@@ -117,7 +117,7 @@ Screen Description: ${screenDescription}
     const cleanCode = sanitizeHtmlCode(rawCode);
 
     const updateResult = await db.update(screensConfigTable).set({
-      code: cleanCode
+      code: cleanCode 
     }).where(
       and(
         eq(screensConfigTable.projectId, projectId),
