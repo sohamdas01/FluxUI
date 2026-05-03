@@ -56,7 +56,9 @@ const Header = () => {
             <Link href='/projects'>Projects</Link>
           </li>
         )}
+        <Link href='/pricing'>
         <li className='hover:text-primary cursor-pointer'>Pricing</li>
+        </Link>
       </ul>
       {!user ?
         <SignInButton mode='modal'>

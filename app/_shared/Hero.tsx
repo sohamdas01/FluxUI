@@ -21,6 +21,7 @@ import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { randomUUID } from 'crypto';
 import axios from 'axios';
+import { toast } from 'sonner';
 
 const Hero = () => {
     const{user}=useUser();
@@ -45,6 +46,11 @@ const Hero = () => {
             device:deviceType,
             projectId:projectId
            })
+           if(result.data.msg=='Limit Exceed'){
+            setLoading(false);
+            toast.error('You have reached the maximum project limit for free users. Please upgrade to the premium plan for unlimited projects.');
+            return;
+           }
            setLoading(false);
            console.log(result.data)
            //naviagte to project page

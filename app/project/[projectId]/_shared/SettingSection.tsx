@@ -9,6 +9,8 @@ import { ProjectType } from '@/type/types';
 import { SettingContext } from '@/context/SettingContext';
 import axios from 'axios';
 import { RefreshDataContext } from '@/context/RefreshDataContext';
+import { useAuth } from '@clerk/nextjs';
+import { toast } from 'sonner';
 // This component can be expanded to include more settings as needed, such as theme selection, project name editing, screen generation input, etc. For now, it includes placeholders for these functionalities.
 type Props = {
     projectDetail: ProjectType | undefined,
@@ -24,6 +26,9 @@ const SettingSection = ({ projectDetail, screenDescription, takeScreenShot }: Pr
     const [loading, setLoading] = useState(false);
      const{refreshData,setRefreshData}=useContext(RefreshDataContext);
     const [loadingMessage,setLoadingMessage]=useState<string>('Loading');
+
+    const {has}=useAuth();
+    const hasPremium=has({plan:'unlimited'});
     // We can have useEffects to initialize the state based on projectDetail when it is loaded
     useEffect(() => {
         projectDetail && setProjectName(projectDetail?.projectName ?? '');
@@ -37,6 +42,10 @@ const SettingSection = ({ projectDetail, screenDescription, takeScreenShot }: Pr
     }
 
     const generateNewScreen = async () => {
+        if(!hasPremium){
+            toast.error('You have reached the maximum screen generation limit for free users. Please upgrade to the premium plan for unlimited screen generations.');
+            return;
+        }
         try{
         setLoading(true);
         setLoadingMessage('Generating new screen configuration...');
