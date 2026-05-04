@@ -38,7 +38,7 @@ import { htmlWrapper } from '@/data/constant';
 import html2canvas from 'html2canvas';
 import axios from 'axios';
 import { Textarea } from '@/components/ui/textarea';
-
+import { useAuth } from '@clerk/nextjs';
 type Props = {
     screen: ScreenConfigType | undefined,
     theme: any,
@@ -50,8 +50,11 @@ const ScreenHandler = ({ screen, theme, isMobile, iframeref, projectId }: Props)
     const htmlCode = htmlWrapper(theme, screen?.code as string, isMobile ?? false);
 
     const { refreshData, setRefreshData } = useContext(RefreshDataContext);
-    const [userInput,setUserInput]=useState<string>('');
-    const [loading,setLoading]=useState<boolean>(false);
+    const [userInput, setUserInput] = useState<string>('');
+    const [loading, setLoading] = useState<boolean>(false);
+
+    const { has } = useAuth();
+    const hasPremium = has({ plan: 'unlimited' });
 
     const takeIframeScreenshot = async () => {
         const iframe = iframeref.current;
@@ -89,18 +92,22 @@ const ScreenHandler = ({ screen, theme, isMobile, iframeref, projectId }: Props)
         setRefreshData({ method: 'screnConfig', date: Date.now() });
 
     }
-    const editScreen=async()=>{
+    const editScreen = async () => {
+        if (!hasPremium) {
+            toast.error('You have reached the maximum screen generation limit for free users. Please upgrade to the premium plan for unlimited screen generations.');
+            return;
+        }
         setLoading(true);
-         toast.info('Regenerating screen, please wait...');
-      const result=await axios.post('/api/edit-screen',{
-        projectId:projectId,
-        screenId:screen?.screenId,
-        oldCode:screen?.code,
-        userInput:userInput
-      });
-      console.log(result.data);
-      toast.success('Screen updated successfully!');
-      setRefreshData({ method: 'screnConfig', date: Date.now() });
+        toast.info('Regenerating screen, please wait...');
+        const result = await axios.post('/api/edit-screen', {
+            projectId: projectId,
+            screenId: screen?.screenId,
+            oldCode: screen?.code,
+            userInput: userInput
+        });
+        console.log(result.data);
+        toast.success('Screen updated successfully!');
+        setRefreshData({ method: 'screnConfig', date: Date.now() });
         setLoading(false);
     }
     return (
@@ -110,52 +117,70 @@ const ScreenHandler = ({ screen, theme, isMobile, iframeref, projectId }: Props)
                 <h2>{screen?.screenName}</h2>
             </div>
             <div>
+                {/* Source Code */}
+                {hasPremium ? (
+                    <Dialog>
+                        <DialogTrigger asChild >
+                            <Button disabled={!hasPremium}><Code2Icon /></Button>
+                        </DialogTrigger>
+                        <DialogContent className='max-w-6xl w-full h-[70vh] flex flex-col'>
+                            <DialogHeader>
+                                <DialogTitle>HTML + TailWindcss Code </DialogTitle>
+                                <DialogDescription>
+                                    <div className='flex-1 overflow-y-auto rounded-md border bg-muted p-4'>
+                                        {/* @ts-ignore */}
+                                        <SyntaxHighlighter language="html" style={docco} customStyle={{
+                                            margin: 0,
+                                            padding: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word', overflowX: 'hidden', height: '50vh'
+                                        }}
+                                            codeTagProps={{
+                                                style: {
+                                                    whiteSpace: 'pre-wrap',
+                                                    wordBreak: 'break-word'
+                                                }
+                                            }}>
+                                            {htmlCode}
+                                        </SyntaxHighlighter>
 
-                <Dialog>
-                    <DialogTrigger>
-                        <Button variant={"ghost"}><Code2Icon /></Button>
-                    </DialogTrigger>
-                    <DialogContent className='max-w-6xl w-full h-[70vh] flex flex-col'>
-                        <DialogHeader>
-                            <DialogTitle>HTML + TailWindcss Code </DialogTitle>
-                            <DialogDescription>
-                                <div className='flex-1 overflow-y-auto rounded-md border bg-muted p-4'>
-                                    {/* @ts-ignore */}
-                                    <SyntaxHighlighter language="html" style={docco} customStyle={{
-                                        margin: 0,
-                                        padding: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word', overflowX: 'hidden', height: '50vh'
-                                    }}
-                                        codeTagProps={{
-                                            style: {
-                                                whiteSpace: 'pre-wrap',
-                                                wordBreak: 'break-word'
-                                            }
-                                        }}>
-                                        {htmlCode}
-                                    </SyntaxHighlighter>
-
-                                </div>
-                                <Button className='mt-5' onClick={() => {
-                                    navigator.clipboard.writeText(htmlCode as string);
-                                    toast.success('Code copied to clipboard!')
-                                }} ><Copy />Copy</Button>
-                            </DialogDescription>
-                        </DialogHeader>
-                    </DialogContent>
-                </Dialog>
+                                    </div>
+                                    <Button className='mt-5' onClick={() => {
+                                        navigator.clipboard.writeText(htmlCode as string);
+                                        toast.success('Code copied to clipboard!')
+                                    }} ><Copy />Copy</Button>
+                                </DialogDescription>
+                            </DialogHeader>
+                        </DialogContent>
+                    </Dialog>
+                ) : (
+                    <Button
+                        onClick={() =>
+                            toast.error('Upgrade to premium to view code.')
+                        }
+                    >
+                        <Code2Icon />
+                    </Button>
+                )}
+                {/* download screen */}
                 <Button onClick={takeIframeScreenshot}><Download /></Button>
                 {/* edit screen */}
                 <Popover>
                     <PopoverTrigger asChild>
-                        <Button><SparkleIcon /></Button> 
+                        <Button 
+                        
+                        onClick={()=>{
+                            if(!hasPremium){
+                            toast.error('Upgrade to premium to edit screens')
+                        }
+                        }}><SparkleIcon /></Button>
                     </PopoverTrigger>
-                    <PopoverContent>
+                   {hasPremium&&( <PopoverContent>
                         <div>
                             <Textarea placeholder='what changes do you want?' value={userInput} onChange={(e) => setUserInput(e.target.value)} />
-                            <Button size={'sm'} className='mt-2' disabled={loading} onClick={()=>editScreen()}>{loading?<Loader2Icon className='animate-spin' />:<SparkleIcon />}Generate</Button>
+                            <Button size={'sm'} className='mt-2' disabled={loading} onClick={() => editScreen()}>{loading ? <Loader2Icon className='animate-spin' /> : <SparkleIcon />}Generate</Button>
                         </div>
-
-                    </PopoverContent>
+                  
+                 </PopoverContent>
+                   )}
                 </Popover>
 
                 {/* delete screen */}

@@ -96,6 +96,11 @@ export async function POST(req: NextRequest) {
     const JSONaiResponse = JSON.parse(completion.output_text);
     console.log("AI RESPONSE ", JSONaiResponse);
 
+  // if (!JSONaiResponse || JSONaiResponse.error || !JSONaiResponse.projectName) {
+  // console.error("Invalid AI response:", JSONaiResponse);
+  // return NextResponse.json({ error: "AI returned invalid response" }, { status: 500 });
+  // }
+
     if (JSONaiResponse) {
       await db.update(projectsTable).set({
         projectVisualDescription: JSONaiResponse?.projectVisualDescription,

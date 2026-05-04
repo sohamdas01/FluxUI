@@ -52,11 +52,11 @@ const page = () => {
     //         handleGenerateScreenUI();
     //     }
     // }, [projectDetail, screenConfigOriginal])
-    const hasGenerated = useRef(false); 
+    // const hasGenerated = useRef(false); 
 
 useEffect(() => {
-    if (projectDetail && screenConfigOriginal.length === 0 && !hasGenerated.current) {
-        hasGenerated.current = true; 
+    if (projectDetail && screenConfigOriginal.length === 0 ) {
+        // hasGenerated.current = true; 
         generateScreenConfig();
     }
     else if (projectDetail && screenConfigOriginal.length > 0) {
