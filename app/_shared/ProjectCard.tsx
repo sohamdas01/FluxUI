@@ -1,34 +1,4 @@
-// import React from 'react'
-// import { ProjectType } from '@/type/types';
-// import Image from 'next/image';
-// import Link from 'next/link';
 
-// type Props={
-//     project: ProjectType
-// }
-// const ProjectCard = ({project}:Props) => {
-//   return (
-//     <Link href={`/projects/${project?.projectId}`}>
-//     <div className='rounded-2xl p-4'>
-//         {project?.screenshot ? (
-//   <Image
-//     src={project.screenshot}
-//     alt={project?.projectName ?? "Project screenshot"}
-//     width={300}
-//     height={200}
-//     className='rounded-xl object-contain h-[200px] w-full bg-gray-100'
-//   />
-// ) : null}
-//     <div className='p-2'>
-//     <h2>{project?.projectName}</h2>
-//     <p className='text-sm text-gray-500'>{project.createdOn}</p>
-//     </div>
-//     </div>
-//     </Link>
-//   )
-// }
-
-// export default ProjectCard
 import React from 'react'
 import { ProjectType } from '@/type/types';
 import Image from 'next/image';

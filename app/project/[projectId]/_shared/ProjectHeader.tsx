@@ -16,7 +16,7 @@ const ProjectHeader = () => {
     toast.error("No project ID found. Cannot save.");
     return;
   }
-    // Here we can make an API call to save the project details, including the settings from the context
+    
     try{
     setLoading(true);
     const result=await axios.put('/api/project',{

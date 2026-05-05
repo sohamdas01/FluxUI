@@ -6,6 +6,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req:NextRequest){
     const user=await currentUser();
+    
+    if (!user?.primaryEmailAddress?.emailAddress) {
+  return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
     const users=await db.select().from(usersTable)
     .where(eq(usersTable.email,user?.primaryEmailAddress?.emailAddress as string));
