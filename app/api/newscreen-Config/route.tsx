@@ -23,12 +23,11 @@ export async function POST(req: NextRequest) {
     const JSONaiResponse = JSON.parse(completion.output_text);
     console.log("AI RESPONSE ", JSONaiResponse);
 
-    // ✅ Guard against bad AI response
     if (!JSONaiResponse) {
       return NextResponse.json({ error: "Failed to generate screen" }, { status: 500 });
     }
 
-    // ✅ Deduplicate by screenId before inserting
+    // Deduplicate by screenId before inserting
     const seen = new Set<string>();
     const uniqueScreens = JSONaiResponse.screens?.filter((screen: any) => {
       if (seen.has(screen.id)) return false;
@@ -36,7 +35,7 @@ export async function POST(req: NextRequest) {
       return true;
     });
 
-    // ✅ Use Promise.all + map so all inserts are properly awaited
+    //  Use Promise.all + map so all inserts are properly awaited
     await Promise.all(
       uniqueScreens?.map(async (screen: any) => {
         await db.insert(screensConfigTable).values({

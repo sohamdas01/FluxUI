@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
   const hasPremium=has({plan:'unlimited'});
 
   const projects=await db.select().from(projectsTable).where(eq(projectsTable.userId, user?.primaryEmailAddress?.emailAddress as string));
-  if(projects.length>=5 && !hasPremium){
+  if(projects.length>=2 && !hasPremium){
     return NextResponse.json({msg:'Limit Exceed'});
   }
 

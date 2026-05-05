@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
             input: USER_INPUT,
         });
 
-        // ✅ Use output_text instead of choices[0].message.content
+        // Use output_text instead of choices[0].message.content
         const rawCode = completion.output_text;
         const cleanCode = sanitizeHtmlCode(rawCode);
 
