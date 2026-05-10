@@ -344,7 +344,7 @@ RULES:
 - projectName: short, catchy name based on user's request
 - theme: pick ONE from: AURORA_INK, DUSTY_ORCHID, MIDNIGHT_OCEAN, SUNSET_CORAL, EMERALD_MIST, ROYAL_SLATE, ARCTIC_BREEZE, NEON_NOIR
 - projectVisualDescription: 1-2 sentences describing the visual style
-- screens: generate EXACTLY 2 screens maximum that make sense for this app. Never generate more than 2 screens.
+- screens:Generate screens according to the user’s needs and the project type, rather than a fixed number of pages. If the user specifies page numbers or provides page‑by‑page content, generate all the corresponding pages.
 - Each screen id must be unique kebab-case
 - layoutDescription: detailed, specific, implementable layout description
 - Device type is: {deviceType}
